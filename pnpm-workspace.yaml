@@ -1,0 +1,4 @@
+packages:
+  # Your own apps go here (e.g. apps/web, apps/worker); they depend on the packages below.
+  - "apps/*"
+  - "packages/*"
