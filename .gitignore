@@ -12,3 +12,14 @@ __pycache__/
 .mypy_cache/
 *.pptx.tmp
 apps/deck-forge/ui/dist/
+
+# Langfuse and Kiro Crew local secrets and generated data (never commit)
+langfuse.env
+.env.*
+!.env.example
+.kirocrew-deps/
+*.pptx
+.vscode/
+.idea/
+.uv-cache/
+*.tsbuildinfo
