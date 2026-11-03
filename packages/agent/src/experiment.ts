@@ -4,7 +4,7 @@ import {
   type ExperimentSummary,
   type ItemEvaluator,
   type RunEvaluator,
-} from "@repo/langfuse";
+} from "@repo/observability";
 
 import type { Agent, RunInput, RunResult } from "./agent.js";
 

@@ -1,4 +1,4 @@
-import { createTestTracing, type TestTracing } from "@repo/langfuse/testing";
+import { createTestTracing, type TestTracing } from "@repo/observability/testing";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { calculateCost, MockChatModel, tracedCompletion, type ChatModel } from "../index.js";

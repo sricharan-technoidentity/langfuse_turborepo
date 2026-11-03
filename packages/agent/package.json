@@ -20,7 +20,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@repo/langfuse": "workspace:*",
+    "@repo/observability": "workspace:*",
     "@repo/llm": "workspace:*"
   },
   "devDependencies": {

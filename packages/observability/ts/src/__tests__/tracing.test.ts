@@ -1,14 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { runExperiment } from "../experiments.js";
-import {
-  createLangfuseSpanProcessor,
-  getActiveTraceId,
-  getLangfuseConfig,
-  LangfuseSpanProcessor,
-  propagateAttributes,
-  startActiveObservation,
-} from "../index.js";
+import { getActiveTraceId, propagateAttributes, startActiveObservation } from "../index.js";
 import { createTestTracing, type TestTracing } from "../testing/index.js";
 
 let tracing: TestTracing;
@@ -56,19 +49,6 @@ describe("tracing through the Langfuse span processor", () => {
     expect(root?.attributes["session.id"]).toBe("session-1");
     expect(root?.attributes["langfuse.environment"]).toBe("test");
     expect(JSON.parse(String(root?.attributes["langfuse.observation.input"]))).toEqual({ message: "hello" });
-  });
-});
-
-describe("createLangfuseSpanProcessor (for apps with their own OpenTelemetry setup)", () => {
-  it("returns nothing without keys and a Langfuse processor with keys", async () => {
-    expect(createLangfuseSpanProcessor({ config: getLangfuseConfig({}) })).toBeUndefined();
-
-    const processor = createLangfuseSpanProcessor({
-      config: getLangfuseConfig({ LANGFUSE_PUBLIC_KEY: "pk-lf-test", LANGFUSE_SECRET_KEY: "sk-lf-test" }),
-      exportMode: "immediate",
-    });
-    expect(processor).toBeInstanceOf(LangfuseSpanProcessor);
-    await processor?.shutdown();
   });
 });
 

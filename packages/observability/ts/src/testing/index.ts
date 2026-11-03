@@ -1,9 +1,7 @@
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { InMemorySpanExporter } from "@opentelemetry/sdk-trace-base";
 
-import { setLangfuseClient } from "../client.js";
-import { getLangfuseConfig } from "../config.js";
-import { flushTracing, initTracing, shutdownTracing } from "../tracing.js";
+import { flushTracing, getLangfuseConfig, initTracing, setLangfuseClient, shutdownTracing } from "@repo/langfuse";
 
 /** A finished span, simplified for assertions. */
 export interface CapturedSpan {

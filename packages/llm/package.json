@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
-    "@repo/langfuse": "workspace:*",
+    "@repo/observability": "workspace:*",
     "openai": "^7.47.0"
   },
   "devDependencies": {

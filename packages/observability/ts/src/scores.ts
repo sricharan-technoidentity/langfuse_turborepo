@@ -1,4 +1,4 @@
-import { getLangfuseClient } from "./client.js";
+import { getLangfuseClient } from "@repo/langfuse";
 
 /**
  * Scores = evaluations attached to traces or observations.

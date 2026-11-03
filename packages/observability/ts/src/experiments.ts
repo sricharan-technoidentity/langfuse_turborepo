@@ -1,6 +1,6 @@
 import { startActiveObservation } from "@langfuse/tracing";
 
-import { getLangfuseClient } from "./client.js";
+import { getLangfuseClient } from "@repo/langfuse";
 import type { ScoreDataType } from "./scores.js";
 
 /**

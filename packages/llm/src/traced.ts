@@ -1,4 +1,4 @@
-import { startActiveObservation, type PromptLink } from "@repo/langfuse";
+import { startActiveObservation, type PromptLink } from "@repo/observability";
 
 import { calculateCost } from "./pricing.js";
 import type { ChatModel, CompletionRequest, CompletionResponse } from "./types.js";

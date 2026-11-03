@@ -18,9 +18,12 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # Python packages (packages/observability/python) are run by Turborepo through uv.
+      - uses: astral-sh/setup-uv@v10
+
       - run: pnpm install --frozen-lockfile
 
-      # Build, typecheck and test every package. Tests use the mock model and an
+      # Build, typecheck and test every package (TS and Python). Tests use the mock model and an
       # in-memory Langfuse exporter, so no API keys are needed.
       # With a Turborepo remote cache (TURBO_TOKEN / TURBO_TEAM), unchanged packages are skipped.
       - run: pnpm turbo run build typecheck test

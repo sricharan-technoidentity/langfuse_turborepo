@@ -1,5 +1,5 @@
-import { defineChatPrompt } from "@repo/langfuse";
-import { createTestTracing, type TestTracing } from "@repo/langfuse/testing";
+import { defineChatPrompt } from "@repo/observability";
+import { createTestTracing, type TestTracing } from "@repo/observability/testing";
 import { MockChatModel, type ChatModel } from "@repo/llm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 

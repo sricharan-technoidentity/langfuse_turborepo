@@ -1,0 +1,11 @@
+{
+  "name": "@repo/observability-python",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shim so Turborepo runs the Python package's checks. Python deps are managed by uv (pyproject.toml + uv.lock).",
+  "scripts": {
+    "typecheck": "uv run --frozen mypy",
+    "test": "uv run --frozen pytest",
+    "clean": "rm -rf .venv .pytest_cache .mypy_cache .turbo"
+  }
+}

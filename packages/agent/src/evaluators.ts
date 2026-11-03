@@ -1,4 +1,4 @@
-import { startActiveObservation, type Evaluation, type ItemEvaluator, type RunEvaluator } from "@repo/langfuse";
+import { startActiveObservation, type Evaluation, type ItemEvaluator, type RunEvaluator } from "@repo/observability";
 import { createChatModel, tracedCompletion, type ChatModel } from "@repo/llm";
 
 import type { Scorer } from "./agent.js";

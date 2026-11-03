@@ -6,7 +6,7 @@ import {
   startActiveObservation,
   type ChatPromptDefinition,
   type Evaluation,
-} from "@repo/langfuse";
+} from "@repo/observability";
 import { createChatModel, tracedCompletion, type ChatModel, type LlmMessage, type TokenUsage } from "@repo/llm";
 
 export interface RunInput {
