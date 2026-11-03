@@ -1,0 +1,21 @@
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: #1a1a1a; background: #f6f6f7; }
+.chat { max-width: 760px; height: 100vh; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+h1 { margin: 0; font-size: 1.25rem; }
+.messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; }
+.message { max-width: 85%; padding: 0.6rem 0.9rem; border-radius: 10px; background: #fff; border: 1px solid #ddd; }
+.message p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.message.user { align-self: flex-end; background: #dbeafe; border-color: #bfdbfe; }
+.meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.875rem; }
+.meta button { padding: 0.1rem 0.45rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer; }
+.meta button[aria-pressed="true"] { background: #e0e7ff; border-color: #6366f1; }
+.meta button:disabled { cursor: default; }
+.meta button:disabled:not([aria-pressed="true"]) { opacity: 0.4; }
+.thinking { margin: 0; color: #555; font-style: italic; }
+.error { margin: 0; color: #b91c1c; }
+.composer { display: flex; gap: 0.5rem; }
+.composer textarea { flex: 1; padding: 0.5rem; font: inherit; border: 1px solid #bbb; border-radius: 8px; resize: vertical; }
+.composer button { padding: 0 1.2rem; font: inherit; border: 0; border-radius: 8px; background: #2563eb; color: #fff; cursor: pointer; }
+.composer button:disabled { background: #93a3c4; cursor: default; }
+:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

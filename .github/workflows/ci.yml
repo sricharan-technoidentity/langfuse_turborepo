@@ -23,7 +23,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # Build, typecheck and test every package (TS and Python). Tests use an in-test fake model and an
+      # Build, typecheck and test every package and app (TS and Python). Tests use an in-test fake model and an
       # in-memory Langfuse exporter, so no API keys are needed.
       # With a Turborepo remote cache (TURBO_TOKEN / TURBO_TEAM), unchanged packages are skipped.
       - run: pnpm turbo run build typecheck test

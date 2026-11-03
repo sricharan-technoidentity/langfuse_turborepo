@@ -15,7 +15,8 @@
     "OPENAI_MODEL",
     "OPENAI_BASE_URL",
     "ANTHROPIC_API_KEY",
-    "ANTHROPIC_MODEL"
+    "ANTHROPIC_MODEL",
+    "PORT"
   ],
   "tasks": {
     "build": {
@@ -57,6 +58,13 @@
     },
     "clean": {
       "cache": false
+    },
+    "dev": {
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": false,
+      "persistent": true
     }
   }
 }
