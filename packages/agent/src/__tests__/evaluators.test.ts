@@ -1,6 +1,5 @@
 import { defineChatPrompt } from "@repo/observability";
 import { createTestTracing, type TestTracing } from "@repo/observability/testing";
-import { MockChatModel } from "@repo/llm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import {
@@ -15,6 +14,7 @@ import {
   runAgentExperiment,
   textOf,
 } from "../index.js";
+import { fakeModel } from "./fake-model.js";
 
 let tracing: TestTracing;
 beforeAll(() => {
@@ -23,7 +23,7 @@ beforeAll(() => {
 beforeEach(() => tracing.reset());
 afterAll(() => tracing.shutdown());
 
-const judgeModel = (reply: string) => new MockChatModel({ latencyMs: 0, respond: () => reply });
+const judgeModel = (reply: string) => fakeModel(() => reply);
 
 describe("rule-based evaluators", () => {
   const base = { input: "q" };
@@ -91,7 +91,7 @@ describe("LLM-as-a-judge", () => {
     const agent = createAgent({
       name: "greeter",
       prompt: defineChatPrompt({ name: "test/greeter", messages: [{ role: "system", content: "Greet." }], config: {} }),
-      model: new MockChatModel({ latencyMs: 0 }),
+      model: fakeModel(),
       scorers: [llmJudgeScorer({ name: "politeness", criteria: "Is it polite?", model: judgeModel('{"score":0.8,"reasoning":"ok"}') })],
     });
     const result = await agent.run({ message: "hello" });
@@ -108,10 +108,7 @@ describe("runAgentExperiment", () => {
         messages: [{ role: "system", content: "Answer with the capital city only." }],
         config: { temperature: 0 },
       }),
-      model: new MockChatModel({
-        latencyMs: 0,
-        respond: (messages) => ({ France: "Paris", Japan: "Tokyo" })[messages.at(-1)?.content ?? ""] ?? "Unknown",
-      }),
+      model: fakeModel((messages) => ({ France: "Paris", Japan: "Tokyo" })[messages.at(-1)?.content ?? ""] ?? "Unknown"),
     });
 
     const summary = await runAgentExperiment(agent, {

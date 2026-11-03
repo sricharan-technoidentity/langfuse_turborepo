@@ -28,9 +28,9 @@ export interface CompletionResponse {
   firstTokenAt?: Date;
 }
 
-export type ProviderName = "openai" | "anthropic" | "mock";
+export type ProviderName = "openai" | "anthropic";
 
-/** Anything that can complete a chat. Implemented by the OpenAI, Anthropic and mock models. */
+/** Anything that can complete a chat. Implemented by the OpenAI and Anthropic models. */
 export interface ChatModel {
   readonly provider: ProviderName;
   /** Default model name used when a request doesn't set one. */

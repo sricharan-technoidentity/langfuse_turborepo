@@ -164,16 +164,16 @@ describe("AnthropicChatModel", () => {
 });
 
 describe("createChatModel", () => {
-  it("auto-selects OpenAI, then Claude, then the mock", () => {
-    expect(resolveProvider({})).toBe("mock");
+  it("auto-selects OpenAI, then Claude, and throws without a key", () => {
+    expect(() => resolveProvider({})).toThrow(/No LLM API key set: add OPENAI_API_KEY or ANTHROPIC_API_KEY/);
     expect(resolveProvider({ ANTHROPIC_API_KEY: "sk-ant-x" })).toBe("anthropic");
     expect(resolveProvider({ OPENAI_API_KEY: "sk-x", ANTHROPIC_API_KEY: "sk-ant-x" })).toBe("openai");
     expect(resolveProvider({ LLM_PROVIDER: "anthropic", OPENAI_API_KEY: "sk-x", ANTHROPIC_API_KEY: "sk-ant-x" })).toBe("anthropic");
-    expect(resolveProvider({ LLM_PROVIDER: "mock", OPENAI_API_KEY: "sk-x" })).toBe("mock");
+    expect(() => resolveProvider({ LLM_PROVIDER: "mock", OPENAI_API_KEY: "sk-x" })).toThrow(/LLM_PROVIDER must be one of auto, openai, anthropic \(got "mock"\)/);
   });
 
   it("treats the .env.example placeholders as missing keys", () => {
-    expect(resolveProvider({ OPENAI_API_KEY: "<your-openai-api-key>", ANTHROPIC_API_KEY: "<your-anthropic-api-key>" })).toBe("mock");
+    expect(() => resolveProvider({ OPENAI_API_KEY: "<your-openai-api-key>", ANTHROPIC_API_KEY: "<your-anthropic-api-key>" })).toThrow(/No LLM API key set/);
   });
 
   it("builds the right model with custom model names", () => {
@@ -186,10 +186,19 @@ describe("createChatModel", () => {
     expect(claude.model).toBe("claude-haiku-5-5");
     expect(describeChatModel(claude)).toBe("LLM: Anthropic (Claude) → claude-haiku-5-5");
 
-    expect(createChatModel({}).provider).toBe("mock");
+    expect(() => createChatModel({})).toThrow(/No LLM API key set: add OPENAI_API_KEY or ANTHROPIC_API_KEY/);
+  });
+
+  it("builds the forced provider when its key is set, even if the other key is too", () => {
+    const both = { OPENAI_API_KEY: "sk-x", ANTHROPIC_API_KEY: "sk-ant-x" };
+    expect(createChatModel({ ...both, LLM_PROVIDER: "openai" })).toBeInstanceOf(OpenAIChatModel);
+    expect(createChatModel({ ...both, LLM_PROVIDER: "anthropic" })).toBeInstanceOf(AnthropicChatModel);
+    expect(createChatModel({ ...both, LLM_PROVIDER: " Anthropic " }).provider).toBe("anthropic");
   });
 
   it("fails clearly when a provider is forced without its key", () => {
+    expect(() => createChatModel({ LLM_PROVIDER: "anthropic", OPENAI_API_KEY: "sk-x" })).toThrow(/ANTHROPIC_API_KEY is not set/);
+    expect(() => createChatModel({ LLM_PROVIDER: "openai", OPENAI_API_KEY: "<your-openai-api-key>" })).toThrow(/OPENAI_API_KEY is not set/);
     expect(() => createChatModel({ LLM_PROVIDER: "openai" })).toThrow(/OPENAI_API_KEY is not set/);
     expect(() => createChatModel({ LLM_PROVIDER: "claude" })).toThrow(/LLM_PROVIDER must be one of/);
   });

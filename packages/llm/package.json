@@ -2,7 +2,7 @@
   "name": "@repo/llm",
   "version": "0.1.0",
   "private": true,
-  "description": "LLM abstraction with a deterministic mock model and Langfuse-traced completions (usage, cost, prompt links).",
+  "description": "OpenAI / Claude behind one interface, with Langfuse-traced completions (usage, prompt links).",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

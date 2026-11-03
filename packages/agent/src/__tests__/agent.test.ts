@@ -1,9 +1,10 @@
 import { defineChatPrompt } from "@repo/observability";
 import { createTestTracing, type TestTracing } from "@repo/observability/testing";
-import { MockChatModel, type ChatModel } from "@repo/llm";
+import type { ChatModel } from "@repo/llm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { createAgent } from "../index.js";
+import { fakeModel } from "./fake-model.js";
 
 let tracing: TestTracing;
 beforeAll(() => {
@@ -21,10 +22,7 @@ const prompt = defineChatPrompt({
 /** Shows exactly which messages reached the model. */
 const recordingModel = () => {
   const calls: { messages: { role: string; content: string }[]; temperature?: number; maxTokens?: number }[] = [];
-  const model = new MockChatModel({
-    latencyMs: 0,
-    respond: (messages) => `translated: ${messages.at(-1)?.content}`,
-  });
+  const model = fakeModel((messages) => `translated: ${messages.at(-1)?.content}`);
   const original = model.complete.bind(model);
   model.complete = async (request) => {
     calls.push({ messages: request.messages, temperature: request.temperature, maxTokens: request.maxTokens });
@@ -56,7 +54,7 @@ describe("createAgent", () => {
     expect(calls[0]).toMatchObject({ temperature: 0.3, maxTokens: 200 });
     expect(result).toMatchObject({
       output: "translated: Good morning",
-      model: "mock/mock-gpt-small",
+      model: "openai/test-model",
       promptName: "test/translator",
       promptVersion: null, // in-code fallback (Langfuse disabled in tests)
       finishReason: "stop",
@@ -67,7 +65,7 @@ describe("createAgent", () => {
   });
 
   it("produces one trace: agent root + generation, with user/session/tags/metadata", async () => {
-    const agent = createAgent({ name: "translator", prompt, model: new MockChatModel({ latencyMs: 0 }), tags: ["team-a"] });
+    const agent = createAgent({ name: "translator", prompt, model: fakeModel(), tags: ["team-a"] });
 
     const result = await agent.run({
       variables: { language: "German" },
@@ -92,7 +90,7 @@ describe("createAgent", () => {
       expect(span.attributes["user.id"]).toBe("user-1");
       expect(span.attributes["session.id"]).toBe("session-1");
       expect(span.attributes["langfuse.trace.name"]).toBe("translator");
-      expect(span.attributes["langfuse.trace.tags"]).toEqual(["translator", "mock", "team-a", "beta"]);
+      expect(span.attributes["langfuse.trace.tags"]).toEqual(["translator", "openai", "team-a", "beta"]);
       expect(JSON.parse(String(span.attributes["langfuse.trace.metadata.feature"]))).toBe("inbox");
     }
     expect(JSON.parse(String(root.attributes["langfuse.observation.input"]))).toEqual({
@@ -100,14 +98,14 @@ describe("createAgent", () => {
       message: "Thanks",
       historyTurns: 0,
     });
-    expect(root.attributes["langfuse.observation.output"]).toBe("[mock reply] Thanks");
+    expect(root.attributes["langfuse.observation.output"]).toBe("Thanks");
   });
 
   it("runs scorers after each call and records them in an evaluator observation", async () => {
     const agent = createAgent({
       name: "translator",
       prompt,
-      model: new MockChatModel({ latencyMs: 0 }),
+      model: fakeModel(),
       scorers: [
         ({ output }) => ({ name: "not_empty", value: output.length > 0 ? 1 : 0, dataType: "BOOLEAN" }),
         ({ result }) => [{ name: "tokens", value: result.usage.total }],
@@ -144,7 +142,7 @@ describe("createAgent", () => {
   });
 
   it("explains what's missing when there is no user message", async () => {
-    const agent = createAgent({ name: "translator", prompt, model: new MockChatModel({ latencyMs: 0 }) });
+    const agent = createAgent({ name: "translator", prompt, model: fakeModel() });
     await expect(agent.run({ variables: { language: "French" } })).rejects.toThrow(/no user message/);
   });
 });

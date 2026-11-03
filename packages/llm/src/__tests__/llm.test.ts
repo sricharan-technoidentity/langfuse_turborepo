@@ -1,44 +1,13 @@
 import { createTestTracing, type TestTracing } from "@repo/observability/testing";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-import { calculateCost, MockChatModel, tracedCompletion, type ChatModel } from "../index.js";
+import { tracedCompletion, type ChatModel } from "../index.js";
+import { fakeModel } from "./fake-model.js";
 
 const messages = [
   { role: "system" as const, content: "You are concise." },
   { role: "user" as const, content: "Say hello" },
 ];
-
-describe("MockChatModel", () => {
-  it("echoes the last user message by default and estimates usage", async () => {
-    const res = await new MockChatModel({ latencyMs: 0 }).complete({ messages });
-    expect(res.content).toBe("[mock reply] Say hello");
-    expect(res.model).toBe("mock-gpt-small");
-    expect(res.finishReason).toBe("stop");
-    expect(res.usage.total).toBe(res.usage.input + res.usage.output);
-  });
-
-  it("accepts a custom responder and model name", async () => {
-    const model = new MockChatModel({
-      latencyMs: 0,
-      model: "mock-gpt-large",
-      respond: (msgs) => `system said: ${msgs[0]?.content}`,
-    });
-    const res = await model.complete({ messages });
-    expect(res.content).toBe("system said: You are concise.");
-    expect(res.model).toBe("mock-gpt-large");
-  });
-});
-
-describe("calculateCost", () => {
-  it("prices mock models per million tokens and leaves real models to Langfuse", () => {
-    expect(calculateCost("mock-gpt-small", { input: 1_000_000, output: 1_000_000, total: 2_000_000 })).toEqual({
-      input: 0.15,
-      output: 0.6,
-      total: 0.75,
-    });
-    expect(calculateCost("gpt-6-luna", { input: 1, output: 1, total: 2 })).toBeUndefined();
-  });
-});
 
 describe("tracedCompletion", () => {
   let tracing: TestTracing;
@@ -48,8 +17,8 @@ describe("tracedCompletion", () => {
   beforeEach(() => tracing.reset());
   afterAll(() => tracing.shutdown());
 
-  it("records a generation with model, parameters, usage, cost and prompt link", async () => {
-    await tracedCompletion(new MockChatModel({ latencyMs: 0 }), {
+  it("records a generation with model, parameters, usage and prompt link", async () => {
+    await tracedCompletion(fakeModel(), {
       name: "answer",
       temperature: 0.2,
       maxTokens: 100,
@@ -60,12 +29,11 @@ describe("tracedCompletion", () => {
     const [generation] = await tracing.byName("answer");
     expect(generation?.type).toBe("generation");
     const attrs = generation!.attributes;
-    expect(attrs["langfuse.observation.model.name"]).toBe("mock-gpt-small");
+    expect(attrs["langfuse.observation.model.name"]).toBe("test-model");
     expect(attrs["langfuse.observation.prompt.name"]).toBe("my-prompt");
     expect(attrs["langfuse.observation.prompt.version"]).toBe(3);
     expect(JSON.parse(String(attrs["langfuse.observation.model.parameters"]))).toEqual({ temperature: 0.2, maxTokens: 100 });
     expect(JSON.parse(String(attrs["langfuse.observation.usage_details"]))).toHaveProperty("total");
-    expect(JSON.parse(String(attrs["langfuse.observation.cost_details"]))).toHaveProperty("total");
   });
 
   it("drops temperature for providers without it and marks failures as errors", async () => {

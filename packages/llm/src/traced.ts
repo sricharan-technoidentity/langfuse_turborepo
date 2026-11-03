@@ -1,6 +1,5 @@
 import { startActiveObservation, type PromptLink } from "@repo/observability";
 
-import { calculateCost } from "./pricing.js";
 import type { ChatModel, CompletionRequest, CompletionResponse } from "./types.js";
 
 export interface TracedCompletionOptions extends CompletionRequest {
@@ -15,7 +14,7 @@ export interface TracedCompletionOptions extends CompletionRequest {
  * Calls the model inside a Langfuse *generation* observation and records everything
  * Langfuse needs for its LLM views: model, parameters actually sent, input messages,
  * output, token usage, time-to-first-token and the prompt version used.
- * Cost: Langfuse calculates it from OpenAI/Claude model names; mock models send their own.
+ * Cost: Langfuse calculates it from OpenAI/Claude model names.
  */
 export function tracedCompletion(model: ChatModel, options: TracedCompletionOptions): Promise<CompletionResponse> {
   const { name = "llm-completion", prompt, metadata, ...request } = options;
@@ -45,7 +44,6 @@ export function tracedCompletion(model: ChatModel, options: TracedCompletionOpti
           output: { role: "assistant", content: response.content },
           completionStartTime: response.firstTokenAt,
           usageDetails: { ...response.usage },
-          costDetails: calculateCost(response.model, response.usage),
           metadata: { finishReason: response.finishReason },
         });
         return response;

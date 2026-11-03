@@ -2,7 +2,7 @@
 
 A **Turborepo** starter for LLM features that are **traced, prompt-managed, scored and evaluated in [Langfuse](https://langfuse.com)**, on **OpenAI or Claude**, in **TypeScript and Python**.
 
-The packages provide the shared infrastructure: tracing, prompt management, scoring and evaluation. Applications live in `apps/`. When no API keys are configured, a mock model is used and no data leaves the machine, so tests and CI need no credentials.
+The packages provide the shared infrastructure: tracing, prompt management, scoring and evaluation. Applications live in `apps/`. Calling a model needs an OpenAI or Anthropic key. Tests use an in-test fake model and an in-memory exporter, so tests and CI need no credentials and no data leaves the machine.
 
 ## Packages
 
@@ -15,7 +15,7 @@ packages/
 ├── observability/              features: tracing, prompts, scores, experiments
 │   ├── ts/                     @repo/observability   TS
 │   └── python/                 repo_observability    Python
-├── llm/                        @repo/llm             OpenAI / Claude / mock behind one interface
+├── llm/                        @repo/llm             OpenAI / Claude behind one interface
 ├── agent/                      @repo/agent           createAgent(), evaluators, experiments
 └── tsconfig/                   @repo/tsconfig        shared TS settings
 apps/                           your apps go here
@@ -35,7 +35,7 @@ Keys in `packages/infra/.env`:
 
 | Variable | What it does |
 | --- | --- |
-| `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` | Picks the model provider. With neither set, the mock model is used |
+| `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` | Picks the model provider. One of them is required to call a model |
 | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | From Langfuse → Settings → API Keys. Without them, nothing is sent |
 | `LANGFUSE_BASE_URL` | `https://cloud.langfuse.com` (EU, default), `https://us.cloud.langfuse.com` (US) or `https://jp.cloud.langfuse.com` (Japan) |
 
@@ -55,8 +55,8 @@ Add the packages your app needs to its `package.json` as `"workspace:*"` depende
 | Score traces and record user feedback | `scoreTrace()`, `scoreCurrentTrace()`, `recordUserFeedback()` |
 | Score every call automatically | `scorers` option of `createAgent()`, e.g. `llmJudgeScorer()` |
 | Run an experiment on a dataset | `runAgentExperiment()` with `exactMatch()`, `containsAll()`, `matchesPatterns()` or `llmJudge()` |
-| Call OpenAI, Claude or the mock model directly | `createChatModel()`, `tracedCompletion()` in `@repo/llm` |
-| Test without network access | `createTestTracing()` in `@repo/observability/testing`, `MockChatModel` in `@repo/llm` |
+| Call OpenAI or Claude directly | `createChatModel()`, `tracedCompletion()` in `@repo/llm` |
+| Test without network access | `createTestTracing()` in `@repo/observability/testing`, plus your own `ChatModel` stub passed as `model` |
 
 If your app already sets up OpenTelemetry (for example with Next.js or Sentry), don't call `initTracing()`. Add `createLangfuseSpanProcessor()` to your existing setup instead.
 
@@ -87,6 +87,6 @@ To add it to an existing Turborepo instead, copy the `packages/` folders you nee
 
 ## Troubleshooting
 
-- **The mock model is used even though a key is set.** Values left as `<...>` are treated as unset. Replace the whole placeholder with your key.
+- **`createChatModel()` throws "No LLM API key" even though a key is set.** Values left as `<...>` are treated as unset. Replace the whole placeholder with your key.
 - **No traces appear in Langfuse.** Check the keys and the `LANGFUSE_BASE_URL` region, and make sure `shutdownLangfuse()` is called before the process exits.
 - **The prompt version is `null`.** The in-code fallback was used. Run `seedChatPrompt()`, or create the prompt in Langfuse with the `production` label.

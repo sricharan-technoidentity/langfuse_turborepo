@@ -27,7 +27,7 @@ describe("tracing through the Langfuse span processor", () => {
           await startActiveObservation(
             "llm-call",
             async (generation) => {
-              generation.update({ model: "mock-gpt-small", usageDetails: { input: 10, output: 5 } });
+              generation.update({ model: "gpt-6-luna", usageDetails: { input: 10, output: 5 } });
             },
             { asType: "generation" },
           );

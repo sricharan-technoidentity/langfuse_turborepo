@@ -59,7 +59,7 @@ export interface AgentConfig {
   prompt: ChatPromptDefinition;
   /** Langfuse prompt label to use (default "production"). */
   promptLabel?: string;
-  /** Defaults to createChatModel(): OpenAI or Claude when a key is set, otherwise the mock. */
+  /** Defaults to createChatModel(): OpenAI or Claude, whichever key is set; throws when neither is. */
   model?: ChatModel;
   /** Online checks run after each call; results become trace scores. */
   scorers?: Scorer[];

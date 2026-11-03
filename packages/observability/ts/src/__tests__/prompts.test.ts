@@ -12,7 +12,7 @@ describe("prompts without Langfuse", () => {
       { role: "system", content: "You work for {{ company }}." },
       { role: "user", content: "{{question}} {{unknown}}" },
     ],
-    config: { model: "mock-gpt-small", temperature: 0.1 },
+    config: { model: "gpt-6-luna", temperature: 0.1 },
   });
 
   it("compiles {{variables}} like Langfuse and keeps unknown ones", () => {
@@ -25,7 +25,7 @@ describe("prompts without Langfuse", () => {
     expect(resolved.isFallback).toBe(true);
     expect(resolved.version).toBeNull();
     expect(resolved.link).toBeUndefined();
-    expect(resolved.config).toEqual({ model: "mock-gpt-small", temperature: 0.1 });
+    expect(resolved.config).toEqual({ model: "gpt-6-luna", temperature: 0.1 });
     expect(resolved.compile({ company: "Acme", question: "Refunds?" })).toEqual([
       { role: "system", content: "You work for Acme." },
       { role: "user", content: "Refunds? {{unknown}}" },

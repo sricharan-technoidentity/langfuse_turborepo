@@ -15,8 +15,7 @@
     "OPENAI_MODEL",
     "OPENAI_BASE_URL",
     "ANTHROPIC_API_KEY",
-    "ANTHROPIC_MODEL",
-    "MOCK_LLM_LATENCY_MS"
+    "ANTHROPIC_MODEL"
   ],
   "tasks": {
     "build": {

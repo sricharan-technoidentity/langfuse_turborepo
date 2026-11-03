@@ -7,7 +7,7 @@ prompt = define_chat_prompt(
         {"role": "system", "content": "You work for {{ company }}."},
         {"role": "user", "content": "{{question}} {{unknown}}"},
     ],
-    config={"model": "mock-gpt-small", "temperature": 0.1},
+    config={"model": "gpt-6-luna", "temperature": 0.1},
 )
 
 
@@ -20,7 +20,7 @@ def test_falls_back_to_the_local_definition(tracing: TestTracing) -> None:
     assert resolved.is_fallback
     assert resolved.version is None
     assert resolved.link is None
-    assert resolved.config == {"model": "mock-gpt-small", "temperature": 0.1}
+    assert resolved.config == {"model": "gpt-6-luna", "temperature": 0.1}
     assert resolved.compile({"company": "Acme", "question": "Refunds?"}) == [
         {"role": "system", "content": "You work for Acme."},
         {"role": "user", "content": "Refunds? {{unknown}}"},
