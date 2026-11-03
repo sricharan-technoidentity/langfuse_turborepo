@@ -5,8 +5,11 @@ interface Message {
   content: string;
   traceId?: string | null;
   traceUrl?: string | null;
+  model?: string;
   vote?: boolean;
 }
+
+const SUGGESTIONS = ["Explain Langfuse in two sentences", "Write a haiku about monorepos", "Give me three tips for writing good prompts"];
 
 // One conversation per page load (groups the traces of this chat in Langfuse).
 // randomUUID only exists on secure origins (HTTPS/localhost); getRandomValues works everywhere.
@@ -32,6 +35,7 @@ export function App() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   // Braces matter: newer browsers return a Promise from scrollIntoView, which React would call as a cleanup.
   useEffect(() => {
@@ -50,8 +54,8 @@ export function App() {
     setError(null);
     try {
       const res = await postJson("/api/chat", { message, history, sessionId });
-      const { output, traceId, traceUrl } = await res.json();
-      setMessages((all) => [...all, { role: "assistant", content: output, traceId, traceUrl }]);
+      const { output, traceId, traceUrl, model } = await res.json();
+      setMessages((all) => [...all, { role: "assistant", content: output, traceId, traceUrl, model }]);
       setInput("");
     } catch (e) {
       setMessages((all) => all.filter((m) => m !== userTurn)); // the text stays in the input so it can be resent
@@ -79,15 +83,41 @@ export function App() {
     }
   }
 
+  function pickSuggestion(text: string) {
+    setInput(text);
+    inputRef.current?.focus();
+  }
+
   return (
     <main className="chat">
-      <h1>Chat</h1>
+      <header className="header">
+        <span className="logo" aria-hidden="true">
+          ✦
+        </span>
+        <div>
+          <h1>Chat</h1>
+          <p className="subtitle">Every reply is traced in Langfuse</p>
+        </div>
+      </header>
       <div className="messages" role="log" aria-live="polite" aria-label="Conversation">
+        {messages.length === 0 && !pending && (
+          <div className="empty">
+            <p className="empty-title">How can I help today?</p>
+            <div className="suggestions">
+              {SUGGESTIONS.map((s) => (
+                <button key={s} type="button" className="suggestion" onClick={() => pickSuggestion(s)}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {messages.map((m, i) => (
           <div key={i} className={`message ${m.role}`}>
             <p>{m.content}</p>
             {m.role === "assistant" && (
               <div className="meta">
+                {m.model && <span className="model">{m.model}</span>}
                 {m.traceId && (
                   <>
                     <button
@@ -119,7 +149,16 @@ export function App() {
             )}
           </div>
         ))}
-        {pending && <p className="thinking">Thinking…</p>}
+        {pending && (
+          <div className="message assistant thinking">
+            <span className="dots" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+            <span className="visually-hidden">Thinking…</span>
+          </div>
+        )}
         <div ref={endRef} />
       </div>
       {error && (
@@ -133,17 +172,24 @@ export function App() {
         </label>
         <textarea
           id="message"
-          rows={3}
+          ref={inputRef}
+          rows={2}
           value={input}
-          placeholder="Type a message. Enter sends, Shift+Enter adds a new line."
+          placeholder="Message the assistant…"
+          aria-describedby="composer-hint"
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
           readOnly={pending} // keeps focus in the box while waiting
         />
         <button type="submit" aria-label="Send message" disabled={pending || !input.trim()}>
-          Send
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12.6 2-12.6 2z" fill="currentColor" />
+          </svg>
         </button>
       </form>
+      <p id="composer-hint" className="hint">
+        Enter to send · Shift+Enter for a new line
+      </p>
     </main>
   );
 }
