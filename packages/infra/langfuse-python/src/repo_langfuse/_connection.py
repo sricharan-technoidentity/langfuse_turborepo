@@ -1,6 +1,6 @@
 """Connection to Langfuse: .env loading, config, the shared client and shutdown.
 
-Mirrors @repo/langfuse (packages/infra/langfuse): same env vars, same placeholder rules.
+Python counterpart of @repo/langfuse (packages/infra/langfuse): same env vars, same placeholder rules.
 """
 
 from __future__ import annotations
@@ -59,13 +59,16 @@ def describe_langfuse_config(config: LangfuseConfig | None = None) -> str:
     """A one-line, secret-free description of the current setup, for startup logs."""
     config = config or get_langfuse_config()
     if not config.enabled:
-        return "Langfuse: disabled (set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env to send traces)"
+        return "Langfuse: disabled (set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in packages/infra/.env to send traces)"
     key = f"{config.public_key[:10]}…" if config.public_key else "?"
     return f"Langfuse: enabled → {config.base_url} (env: {config.environment}, key: {key})"
 
 
-_loaded_from: Path | None = None
-_env_loaded = False
+# The shared infra env file: packages/infra/.env (next to .env.example). Only exists in the repo
+# (editable install); a non-editable install simply skips it.
+INFRA_ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
+
+_loaded: list[Path] | None = None
 
 
 def _parse_env_file(path: Path) -> dict[str, str]:
@@ -84,26 +87,34 @@ def _parse_env_file(path: Path) -> dict[str, str]:
     return values
 
 
-def load_env(start_dir: str | Path | None = None) -> Path | None:
-    """Loads the nearest `.env`, walking up from `start_dir` (default: cwd) until it finds one
-    or reaches the monorepo root (a folder with `pnpm-workspace.yaml` or `turbo.json`).
-    Variables already set in the environment are never overwritten. Returns the loaded path."""
-    global _loaded_from, _env_loaded
-    if _env_loaded:
-        return _loaded_from
-    _env_loaded = True
-
-    directory = Path(start_dir or Path.cwd()).resolve()
-    for candidate_dir in (directory, *directory.parents):
-        candidate = candidate_dir / ".env"
-        if candidate.is_file():
-            for key, value in _parse_env_file(candidate).items():
-                os.environ.setdefault(key, value)
-            _loaded_from = candidate
-            return candidate
-        if (candidate_dir / "pnpm-workspace.yaml").exists() or (candidate_dir / "turbo.json").exists():
-            break
+def _find_nearest_env(start_dir: Path) -> Path | None:
+    """Nearest `.env` walking up from `start_dir`, stopping at the monorepo root."""
+    for directory in (start_dir, *start_dir.parents):
+        if (directory / ".env").is_file():
+            return directory / ".env"
+        if (directory / "pnpm-workspace.yaml").exists() or (directory / "turbo.json").exists():
+            return None
     return None
+
+
+def load_env(start_dir: str | Path | None = None, infra_env_file: Path = INFRA_ENV_FILE) -> list[Path]:
+    """Loads env files, highest priority first (a variable is never overwritten once set):
+      1. real environment variables (CI, Docker...)
+      2. the nearest `.env` walking up from `start_dir` (default: cwd; your app folder or the repo root)
+      3. `packages/infra/.env`, the shared infra config
+    Returns the files that were loaded. Same rules as `loadEnv` in @repo/langfuse."""
+    global _loaded
+    if _loaded is not None:
+        return _loaded
+
+    nearest = _find_nearest_env(Path(start_dir or Path.cwd()).resolve())
+    _loaded = []
+    for file in (nearest, infra_env_file.resolve()):
+        if file is not None and file.is_file() and file not in _loaded:
+            for key, value in _parse_env_file(file).items():
+                os.environ.setdefault(key, value)
+            _loaded.append(file)
+    return _loaded
 
 
 _UNSET = object()
@@ -143,7 +154,7 @@ def init_langfuse(
     if not exporting and not silent:
         print(
             "[langfuse] Keys not configured — nothing is sent. "
-            "Copy .env.example to .env and add your Langfuse Cloud keys."
+            "Copy packages/infra/.env.example to packages/infra/.env and add your Langfuse Cloud keys."
         )
     return _langfuse
 

@@ -1,11 +1,15 @@
 [project]
 name = "repo-observability"
 version = "0.1.0"
-description = "Langfuse features for Python apps: connection, tracing helpers, prompt management, scores/feedback, experiments and test helpers."
+description = "Langfuse features for Python apps: tracing helpers, prompt management, scores/feedback, experiments and test helpers."
 requires-python = ">=3.11"
 dependencies = [
     "langfuse>=5.0.4,<5.1",
+    "repo-langfuse",
 ]
+
+[tool.uv.sources]
+repo-langfuse = { path = "../../infra/langfuse-python", editable = true }
 
 [dependency-groups]
 dev = [

@@ -45,7 +45,7 @@ export function createChatModel(env: NodeJS.ProcessEnv = process.env): ChatModel
 
   if (provider === "openai") {
     const apiKey = readKey(env.OPENAI_API_KEY);
-    if (!apiKey) throw new Error("LLM_PROVIDER=openai but OPENAI_API_KEY is not set. Add it to .env.");
+    if (!apiKey) throw new Error("LLM_PROVIDER=openai but OPENAI_API_KEY is not set. Add it to packages/infra/.env.");
     return new OpenAIChatModel({
       apiKey,
       model: env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL,
@@ -55,7 +55,7 @@ export function createChatModel(env: NodeJS.ProcessEnv = process.env): ChatModel
 
   if (provider === "anthropic") {
     const apiKey = readKey(env.ANTHROPIC_API_KEY);
-    if (!apiKey) throw new Error("LLM_PROVIDER=anthropic but ANTHROPIC_API_KEY is not set. Add it to .env.");
+    if (!apiKey) throw new Error("LLM_PROVIDER=anthropic but ANTHROPIC_API_KEY is not set. Add it to packages/infra/.env.");
     return new AnthropicChatModel({
       apiKey,
       model: env.ANTHROPIC_MODEL?.trim() || DEFAULT_ANTHROPIC_MODEL,
@@ -68,7 +68,7 @@ export function createChatModel(env: NodeJS.ProcessEnv = process.env): ChatModel
 /** One-line description for startup logs (never prints keys). */
 export function describeChatModel(model: ChatModel): string {
   if (model.provider === "mock") {
-    return "LLM: mock model (set OPENAI_API_KEY or ANTHROPIC_API_KEY in .env to use a real model)";
+    return "LLM: mock model (set OPENAI_API_KEY or ANTHROPIC_API_KEY in packages/infra/.env to use a real model)";
   }
   const label = model.provider === "openai" ? "OpenAI" : "Anthropic (Claude)";
   return `LLM: ${label} → ${model.model}`;

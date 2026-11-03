@@ -5,7 +5,7 @@
  * experiments) live in @repo/observability.
  */
 
-export { loadEnv } from "./env.js";
+export { INFRA_ENV_FILE, loadEnv } from "./env.js";
 export {
   DEFAULT_LANGFUSE_BASE_URL,
   describeLangfuseConfig,

@@ -1,0 +1,26 @@
+[project]
+name = "repo-langfuse"
+version = "0.1.0"
+description = "Langfuse connection for Python apps: env files, config, shared client and shutdown."
+requires-python = ">=3.11"
+dependencies = [
+    "langfuse>=5.0.4,<5.1",
+]
+
+[dependency-groups]
+dev = [
+    "mypy==2.4.0",
+    "pytest==9.1.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.9,<1"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+strict = true
+packages = ["repo_langfuse"]
+mypy_path = "src"

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from ._connection import get_langfuse_client
+from repo_langfuse import get_langfuse_client
 
 ScoreDataType = Literal["NUMERIC", "BOOLEAN", "CATEGORICAL"]
 

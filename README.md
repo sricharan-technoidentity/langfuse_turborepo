@@ -17,34 +17,36 @@ There's no app and no sample use case: you bring the prompt, the data and the ap
 turbo-langfuse-monorepo/
 ├── packages/
 │   ├── infra/
-│   │   └── langfuse/         @repo/langfuse              Connection: .env/config, Langfuse client, OTel span processor, shutdown
+│   │   ├── .env.example      (copy to .env)              LLM + Langfuse keys, shared by both infra packages
+│   │   ├── langfuse/         @repo/langfuse              Connection (TS): env files, config, Langfuse client, OTel span processor, shutdown
+│   │   └── langfuse-python/  repo-langfuse (uv)          Connection (Python): the same, for Python apps
 │   ├── observability/
-│   │   ├── ts/               @repo/observability         Features: tracing helpers, prompts, scores/feedback, experiments, test helpers
-│   │   └── python/           repo-observability (uv)     The same connection + features for Python apps
+│   │   ├── ts/               @repo/observability         Features (TS): tracing helpers, prompts, scores/feedback, experiments, test helpers
+│   │   └── python/           repo-observability (uv)     Features (Python): the same, in snake_case
 │   ├── llm/                  @repo/llm                   OpenAI + Claude + mock behind one ChatModel interface; traced calls
 │   ├── agent/                @repo/agent                 createAgent(): your prompt + model + scorers; evaluators; experiments
 │   └── tsconfig/             @repo/tsconfig              Shared TypeScript settings
 ├── apps/                     (empty)                     Put your own apps here; they import the packages above
-├── turbo.json                                            Task pipeline + caching
-└── .env.example                                          LLM + Langfuse key placeholders
+└── turbo.json                                            Task pipeline + caching
 ```
 
 ```
-tsconfig ─► infra/langfuse ─► observability/ts ─► llm ─► agent ─► (your TS apps)
-observability/python ─► (your Python apps)          reads the same root .env
+TS:      tsconfig ─► infra/langfuse ─► observability/ts ─► llm ─► agent ─► (your TS apps)
+Python:  infra/langfuse-python ─► observability/python ─► (your Python apps)
+Both read packages/infra/.env
 ```
 
 ## Quick start
 
-Requirements: **Node.js 22.12+**, **pnpm 10** (`corepack enable` gives you the pinned pnpm) and **[uv](https://docs.astral.sh/uv/)** for the Python package.
+Requirements: **Node.js 22.12+**, **pnpm 10** (`corepack enable` gives you the pinned pnpm) and **[uv](https://docs.astral.sh/uv/)** for the Python packages.
 
 ```bash
 pnpm install
-pnpm check            # build + typecheck + test all packages, TS and Python (cached by Turborepo)
-cp .env.example .env  # then fill in your keys
+pnpm check                                               # build + typecheck + test everything, TS and Python (cached by Turborepo)
+cp packages/infra/.env.example packages/infra/.env       # then fill in your keys
 ```
 
-No uv? Skip the Python package with `pnpm turbo run typecheck test --filter='!@repo/observability-python'`.
+No uv? Skip the Python packages with `pnpm turbo run typecheck test --filter='!@repo/*-python'`.
 
 ## Using this template in a project
 
@@ -59,11 +61,11 @@ pnpm dlx create-turbo@latest --example https://github.com/sricharan-technoidenti
 
 Add your apps under `apps/` (see [Using the packages](#using-the-packages) and [Python](#python)).
 
-**B. Add it to an existing Turborepo.** Copy `packages/tsconfig`, `packages/infra`, `packages/observability`, `packages/llm` and `packages/agent` into your repo (leave out `packages/observability/python` if you don't need Python), then:
+**B. Add it to an existing Turborepo.** Copy `packages/tsconfig`, `packages/infra`, `packages/observability`, `packages/llm` and `packages/agent` into your repo (leave out `packages/infra/langfuse-python` and `packages/observability/python` if you don't need Python), then:
 
 1. Make sure your workspace globs include `packages/*`, `packages/infra/*` and `packages/observability/*` (`pnpm-workspace.yaml`, or `workspaces` in `package.json`).
 2. In your `turbo.json`, give `build`, `typecheck` and `test` a `"dependsOn": ["^build"]`, set `"outputs": ["dist/**"]` on `build`, and copy the `globalPassThroughEnv` list from this repo's `turbo.json`.
-3. Copy `.env.example` to your repo root as `.env`, then run your install.
+3. Copy `packages/infra/.env.example` to `packages/infra/.env` and fill in your keys, then run your install.
 4. With npm, replace `"workspace:*"` with `"*"` in the copied `package.json` files. pnpm, Yarn and Bun understand `workspace:*`.
 
 The packages are ESM and need Node.js 22.12+. The `@repo/*` scope is Turborepo's convention for internal packages. To rename it, find-and-replace `@repo/` across the copied folders.
@@ -80,9 +82,15 @@ new NodeSDK({ spanProcessors: [...yourProcessors, ...(langfuse ? [langfuse] : []
 
 Everything else (`createAgent`, prompts, scores, experiments) works the same either way.
 
-## Configuration (`.env` in the repo root)
+## Configuration (`packages/infra/.env`)
 
-Replace the `<...>` placeholders. Anything still in `<...>` counts as "not set".
+Copy `packages/infra/.env.example` to `packages/infra/.env` and replace the `<...>` placeholders. Anything still in `<...>` counts as "not set". The file is git-ignored.
+
+`loadEnv()` (TS) and `load_env()` (Python) use the same order. A variable that's already set is never overwritten:
+
+1. Real environment variables (CI, Docker, your shell)
+2. The nearest `.env` walking up from the current folder to the repo root (e.g. `apps/my-app/.env`, for per-app overrides)
+3. `packages/infra/.env`, the shared default
 
 | Variable | Purpose |
 | --- | --- |
@@ -125,7 +133,7 @@ Then run `pnpm install`. Turborepo now builds the packages before your app and c
 ```ts
 import { initTracing, loadEnv, shutdownLangfuse, describeLangfuseConfig } from "@repo/langfuse";
 
-loadEnv();                                   // reads the root .env
+loadEnv();                                   // app/root .env, then packages/infra/.env
 initTracing({ exportMode: "batched" });      // "immediate" for scripts / serverless; existing OTel setup → option C above
 console.log(describeLangfuseConfig());
 
@@ -265,22 +273,25 @@ await startActiveObservation("search-docs", async (span) => {
 
 ## Python
 
-`packages/observability/python` is a [uv](https://docs.astral.sh/uv/) project (`repo-observability`, imported as `repo_observability`, Python 3.11+, Langfuse Python SDK v5). It has the same connection and features as `@repo/langfuse` + `@repo/observability`, in snake_case, and reads the same root `.env`.
+The Python side has the same split as TypeScript. Both are [uv](https://docs.astral.sh/uv/) projects (Python 3.11+, Langfuse Python SDK v5) and read the same `packages/infra/.env`:
 
-Add it to a Python app (e.g. `apps/my-api/`):
+| Folder | Package (import) | Counterpart of |
+| --- | --- | --- |
+| `packages/infra/langfuse-python` | `repo-langfuse` (`repo_langfuse`): connection | `@repo/langfuse` |
+| `packages/observability/python` | `repo-observability` (`repo_observability`): features | `@repo/observability` |
+
+Add them to a Python app (e.g. `apps/my-api/`). Add both, because uv doesn't follow path dependencies of path dependencies:
 
 ```bash
 cd apps/my-api
-uv init --app && uv add --editable ../../packages/observability/python
+uv init --app && uv add --editable ../../packages/infra/langfuse-python ../../packages/observability/python
 ```
 
 ```python
-from repo_observability import (
-    define_chat_prompt, describe_langfuse_config, get_chat_prompt, init_langfuse, load_env,
-    observe, propagate_attributes, record_user_feedback, get_current_trace_id, shutdown_langfuse,
-)
+from repo_langfuse import describe_langfuse_config, init_langfuse, load_env, shutdown_langfuse
+from repo_observability import define_chat_prompt, get_chat_prompt, observe, propagate_attributes, record_user_feedback
 
-load_env()                      # reads the root .env
+load_env()                      # app/root .env, then packages/infra/.env
 init_langfuse()                 # without keys: nothing is sent, features run locally
 print(describe_langfuse_config())
 
@@ -304,14 +315,14 @@ shutdown_langfuse()             # flush before exit
 
 | Module | Main exports |
 | --- | --- |
-| connection | `load_env`, `init_langfuse`, `get_langfuse_config`, `describe_langfuse_config`, `get_langfuse_client`, `flush_langfuse`, `shutdown_langfuse` |
+| `repo_langfuse` (connection) | `load_env`, `init_langfuse`, `get_langfuse_config`, `describe_langfuse_config`, `get_langfuse_client`, `flush_langfuse`, `shutdown_langfuse` |
 | tracing | `observe`, `propagate_attributes`, `start_as_current_observation`, `get_current_trace_id` |
 | prompts | `define_chat_prompt`, `get_chat_prompt`, `seed_chat_prompt`, `compile_template` |
 | scores | `score_current_trace`, `score_trace`, `record_user_feedback` |
 | experiments | `run_experiment(name=, data=, task=, evaluators=, run_evaluators=, dataset_name=)`, `sync_dataset`, `Evaluation` |
 | `repo_observability.testing` | `create_test_tracing()`: spans in memory, no network, no keys (see `tests/conftest.py`) |
 
-Experiment evaluators use the Langfuse SDK signature `(*, input, output, expected_output, metadata, **kwargs) -> Evaluation`, so the same function works with and without keys. Turborepo runs the package's `mypy` and `pytest` through its `package.json` shim. Inside the folder, `uv run pytest` works directly.
+Experiment evaluators use the Langfuse SDK signature `(*, input, output, expected_output, metadata, **kwargs) -> Evaluation`, so the same function works with and without keys. Turborepo runs each package's `mypy` and `pytest` through its `package.json` shim. Inside either folder, `uv run pytest` works directly.
 
 ## What you see in Langfuse
 
@@ -330,7 +341,7 @@ scores: under_60_words, faithfulness, user_feedback, …
 | `@repo/langfuse` (infra) | `loadEnv`, `initTracing`, `createLangfuseSpanProcessor`, `flushTracing`, `shutdownLangfuse`, `getLangfuseConfig`, `describeLangfuseConfig`, `getLangfuseClient`, `getTraceUrl` |
 | `@repo/observability` | `defineChatPrompt`, `getChatPrompt`, `seedChatPrompt`, `scoreCurrentTrace`, `scoreTrace`, `recordUserFeedback`, `runExperiment`, `syncDataset`, plus the SDK's `startActiveObservation`, `startObservation`, `observe`, `propagateAttributes`, `getActiveTraceId` |
 | `@repo/observability/testing` | `createTestTracing()`: captures spans in memory through the real Langfuse processor, for tests |
-| `repo_observability` (Python) | See [Python](#python) |
+| `repo_langfuse`, `repo_observability` (Python) | See [Python](#python) |
 | `@repo/llm` | `ChatModel`, `createChatModel`, `describeChatModel`, `OpenAIChatModel`, `AnthropicChatModel`, `MockChatModel`, `tracedCompletion` |
 | `@repo/agent` | `createAgent`, `runAgentExperiment`, `exactMatch`, `containsAll`, `matchesPatterns`, `llmJudge`, `llmJudgeScorer`, `judgeWithLlm`, `passRate`, `textOf` |
 
@@ -352,7 +363,7 @@ const spans = await tracing.spans();                       // assert names, type
 await tracing.shutdown();
 ```
 
-The packages' own tests (`pnpm test`: 37 TypeScript, 13 Python) follow this pattern. The provider tests run the real OpenAI and Claude SDKs against a local fake server.
+The packages' own tests (`pnpm test`: 40 TypeScript, 14 Python) follow this pattern. The provider tests run the real OpenAI and Claude SDKs against a local fake server.
 
 ## Turborepo notes
 
@@ -361,7 +372,7 @@ The packages' own tests (`pnpm test`: 37 TypeScript, 13 Python) follow this patt
 - API keys are in `globalPassThroughEnv`: your tasks can read them, but changing a key doesn't invalidate the cache.
 - Run `pnpm check` twice to see `FULL TURBO`. Edit one package and only it and its dependents re-run.
 - Remote cache: `npx turbo login && npx turbo link`. CI then reuses your local results.
-- The Python package joins the pipeline through a small `package.json` (scripts call `uv run --frozen mypy` and `uv run --frozen pytest`). Its `turbo.json` adds `tests/**`, `pyproject.toml` and `uv.lock` to the cache inputs. After changing Python dependencies, run `uv lock` in that folder.
+- The Python packages join the pipeline through a small `package.json` each (scripts call `uv run --frozen mypy` and `uv run --frozen pytest`). Their `turbo.json` adds `tests/**`, `pyproject.toml` and `uv.lock` to the cache inputs. `observability/python` also lists `infra/langfuse-python/src/**`, so changing the connection re-runs its checks. After changing Python dependencies, run `uv lock` in that folder.
 
 ## Troubleshooting
 

@@ -27,7 +27,8 @@
         "src/**",
         "!src/**/__tests__/**",
         "tsconfig*.json",
-        "package.json"
+        "package.json",
+        "!**/__pycache__/**"
       ],
       "outputs": [
         "dist/**"
@@ -40,7 +41,8 @@
       "inputs": [
         "src/**",
         "tsconfig*.json",
-        "package.json"
+        "package.json",
+        "!**/__pycache__/**"
       ]
     },
     "test": {
@@ -50,7 +52,8 @@
       "inputs": [
         "src/**",
         "vitest.config.*",
-        "package.json"
+        "package.json",
+        "!**/__pycache__/**"
       ]
     },
     "clean": {

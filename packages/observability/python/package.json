@@ -7,5 +7,8 @@
     "typecheck": "uv run --frozen mypy",
     "test": "uv run --frozen pytest",
     "clean": "rm -rf .venv .pytest_cache .mypy_cache .turbo"
+  },
+  "dependencies": {
+    "@repo/langfuse-python": "workspace:*"
   }
 }

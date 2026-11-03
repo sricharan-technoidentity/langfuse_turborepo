@@ -6,7 +6,7 @@ from typing import Any
 
 from langfuse import get_client, observe, propagate_attributes
 
-from ._connection import init_langfuse
+from repo_langfuse import init_langfuse
 
 __all__ = ["get_current_trace_id", "observe", "propagate_attributes", "start_as_current_observation"]
 

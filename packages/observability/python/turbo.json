@@ -1,12 +1,27 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "extends": ["//"],
+  "extends": [
+    "//"
+  ],
   "tasks": {
     "typecheck": {
-      "inputs": ["src/**", "pyproject.toml", "uv.lock"]
+      "inputs": [
+        "src/**",
+        "pyproject.toml",
+        "uv.lock",
+        "!**/__pycache__/**",
+        "$TURBO_ROOT$/packages/infra/langfuse-python/src/**/*.py"
+      ]
     },
     "test": {
-      "inputs": ["src/**", "tests/**", "pyproject.toml", "uv.lock"]
+      "inputs": [
+        "src/**",
+        "tests/**",
+        "pyproject.toml",
+        "uv.lock",
+        "!**/__pycache__/**",
+        "$TURBO_ROOT$/packages/infra/langfuse-python/src/**/*.py"
+      ]
     }
   }
 }

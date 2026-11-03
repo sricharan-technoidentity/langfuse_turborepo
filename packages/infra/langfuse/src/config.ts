@@ -46,7 +46,7 @@ export function isLangfuseEnabled(env: NodeJS.ProcessEnv = process.env): boolean
 /** A one-line, secret-free description of the current setup, for startup logs. */
 export function describeLangfuseConfig(config: LangfuseConfig = getLangfuseConfig()): string {
   if (!config.enabled) {
-    return "Langfuse: disabled (set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env to send traces)";
+    return "Langfuse: disabled (set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in packages/infra/.env to send traces)";
   }
   const key = config.publicKey ? `${config.publicKey.slice(0, 10)}…` : "?";
   return `Langfuse: enabled → ${config.baseUrl} (env: ${config.environment}, key: ${key})`;

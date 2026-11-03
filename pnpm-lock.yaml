@@ -77,6 +77,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(vite@8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15))
 
+  packages/infra/langfuse-python: {}
+
   packages/llm:
     dependencies:
       '@anthropic-ai/sdk':
@@ -102,7 +104,11 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(vite@8.3.5(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15))
 
-  packages/observability/python: {}
+  packages/observability/python:
+    dependencies:
+      '@repo/langfuse-python':
+        specifier: workspace:*
+        version: link:../../infra/langfuse-python
 
   packages/observability/ts:
     dependencies:

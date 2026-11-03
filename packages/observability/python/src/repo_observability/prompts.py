@@ -15,7 +15,7 @@ from typing import Any, Literal, TypedDict
 
 from langfuse.model import ChatPromptClient
 
-from ._connection import get_langfuse_client
+from repo_langfuse import get_langfuse_client
 
 
 class ChatMessage(TypedDict):

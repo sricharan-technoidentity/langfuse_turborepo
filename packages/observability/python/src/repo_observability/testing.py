@@ -10,7 +10,7 @@ from typing import Any
 from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
-from ._connection import flush_langfuse, get_langfuse_config, init_langfuse, set_langfuse_client, shutdown_langfuse
+from repo_langfuse import flush_langfuse, get_langfuse_config, init_langfuse, set_langfuse_client, shutdown_langfuse
 
 __all__ = ["CapturedSpan", "InMemorySpanExporter", "TestTracing", "create_test_tracing"]
 

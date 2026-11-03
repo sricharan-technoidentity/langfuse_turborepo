@@ -22,7 +22,7 @@ from typing import Any, Literal, TypedDict
 from langfuse import Evaluation
 from langfuse.experiment import ExperimentItemResult
 
-from ._connection import get_langfuse_client
+from repo_langfuse import get_langfuse_client
 from .tracing import get_current_trace_id, start_as_current_observation
 
 

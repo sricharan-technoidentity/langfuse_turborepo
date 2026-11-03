@@ -82,7 +82,7 @@ export function initTracing(options: InitTracingOptions = {}): TracingHandle {
   if (!exporting && !options.silent) {
     console.warn(
       "[langfuse] Keys not configured — tracing runs locally but nothing is sent. " +
-        "Copy .env.example to .env and add your Langfuse Cloud keys.",
+        "Copy packages/infra/.env.example to packages/infra/.env and add your Langfuse Cloud keys.",
     );
   }
 
