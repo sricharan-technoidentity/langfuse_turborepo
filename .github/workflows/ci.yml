@@ -19,7 +19,7 @@ jobs:
           cache: pnpm
 
       # Python packages (packages/observability/python) are run by Turborepo through uv.
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.1
 
       - run: pnpm install --frozen-lockfile
 
