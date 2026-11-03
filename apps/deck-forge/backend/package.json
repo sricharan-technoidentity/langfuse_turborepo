@@ -1,0 +1,16 @@
+{
+  "name": "@repo/deck-forge-backend",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Shim so Turborepo runs the Deck Forge backend's Python checks (uv). The assembly package @repo/deck-forge bundles it.",
+  "scripts": {
+    "typecheck": "uv run --frozen mypy",
+    "test": "uv run --frozen pytest",
+    "clean": "rm -rf .venv .pytest_cache .mypy_cache .turbo"
+  },
+  "dependencies": {
+    "@repo/langfuse-python": "workspace:*",
+    "@repo/observability-python": "workspace:*",
+    "@repo/deck-renderer": "workspace:*"
+  }
+}

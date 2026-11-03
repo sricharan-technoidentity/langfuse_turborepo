@@ -1,6 +1,10 @@
 packages:
-  # Your own apps go here (e.g. apps/web, apps/worker); they depend on the packages below.
+  # Applications. apps/deck-forge is the installable Kiro Crew app (assembly package);
+  # its UI and backend are separate workspace packages nested under it.
   - "apps/*"
+  - "apps/deck-forge/ui"
+  - "apps/deck-forge/backend"
+  # Shared packages (same globs as lf_turbo).
   - "packages/*"
   - "packages/infra/*"
   - "packages/observability/*"

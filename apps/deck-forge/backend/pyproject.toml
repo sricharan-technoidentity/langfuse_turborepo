@@ -1,0 +1,33 @@
+[project]
+name = "deck-forge-backend"
+version = "0.2.0"
+description = "Deck Forge backend (Kiro Crew app): runs the deck-forge-writer Kiro agent, renders .pptx, traces to Langfuse."
+requires-python = ">=3.11"
+dependencies = [
+    "langfuse>=5.0.4,<5.1",
+    "python-pptx==1.0.2",
+    "repo-langfuse",
+    "repo-observability",
+    "repo-deck-renderer",
+]
+
+[tool.uv.sources]
+repo-langfuse = { path = "../../../packages/infra/langfuse-python", editable = true }
+repo-observability = { path = "../../../packages/observability/python", editable = true }
+repo-deck-renderer = { path = "../../../packages/deck-renderer", editable = true }
+
+[dependency-groups]
+dev = ["mypy==2.4.0", "pytest==9.1.1"]
+
+[build-system]
+requires = ["uv_build>=0.9,<1"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+packages = ["deck_forge_backend"]
+mypy_path = "src"
+ignore_missing_imports = true
+check_untyped_defs = true

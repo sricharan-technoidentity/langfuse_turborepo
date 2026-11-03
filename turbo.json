@@ -10,61 +10,23 @@
     "LANGFUSE_BASE_URL",
     "LANGFUSE_TRACING_ENVIRONMENT",
     "LANGFUSE_RELEASE",
-    "LLM_PROVIDER",
-    "OPENAI_API_KEY",
-    "OPENAI_MODEL",
-    "OPENAI_BASE_URL",
-    "ANTHROPIC_API_KEY",
-    "ANTHROPIC_MODEL",
     "PORT"
   ],
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "src/**",
-        "!src/**/__tests__/**",
-        "tsconfig*.json",
-        "package.json",
-        "!**/__pycache__/**"
-      ],
-      "outputs": [
-        "dist/**"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "!src/**/__tests__/**", "tsconfig*.json", "package.json", "!**/__pycache__/**"],
+      "outputs": ["dist/**"]
     },
     "typecheck": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "src/**",
-        "tsconfig*.json",
-        "package.json",
-        "!**/__pycache__/**"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "tsconfig*.json", "package.json", "!**/__pycache__/**"]
     },
     "test": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "src/**",
-        "vitest.config.*",
-        "package.json",
-        "!**/__pycache__/**"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["src/**", "vitest.config.*", "package.json", "!**/__pycache__/**"]
     },
-    "clean": {
-      "cache": false
-    },
-    "dev": {
-      "dependsOn": [
-        "^build"
-      ],
-      "cache": false,
-      "persistent": true
-    }
+    "clean": { "cache": false },
+    "dev": { "dependsOn": ["^build"], "cache": false, "persistent": true }
   }
 }

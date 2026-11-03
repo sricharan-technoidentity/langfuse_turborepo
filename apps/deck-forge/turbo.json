@@ -1,0 +1,22 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "app.json", "agents/**", "skills/**", "samples/**", "scripts/**", "README.md", "package.json",
+        "backend/src/**",
+        "$TURBO_ROOT$/packages/infra/langfuse-python/src/**",
+        "$TURBO_ROOT$/packages/observability/python/src/**",
+        "$TURBO_ROOT$/packages/deck-renderer/src/**",
+        "!**/__pycache__/**"
+      ],
+      "outputs": ["dist/**"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["scripts/**", "backend/tests/fake-kiro-cli", "package.json"]
+    }
+  }
+}

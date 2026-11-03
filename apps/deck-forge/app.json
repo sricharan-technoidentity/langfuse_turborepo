@@ -1,0 +1,39 @@
+{
+  "name": "deck-forge",
+  "version": "0.2.0",
+  "displayName": "Deck Forge",
+  "description": "Type a prompt, get a .pptx. An app agent writes structured slide JSON; the backend renders it deterministically with python-pptx. Each deck is traced to Langfuse when keys are configured.",
+  "author": "bhaskar",
+  "license": "MIT-0",
+  "agents": [
+    "agents/deck-forge-writer.json"
+  ],
+  "skills": [
+    "skills/deck-forge-outline"
+  ],
+  "backend": {
+    "entryPoint": "backend/server.py",
+    "port": "auto",
+    "healthCheck": "/health",
+    "routes": "/api/apps/deck-forge",
+    "type": "python"
+  },
+  "ui": {
+    "entry": "dist/index.mjs",
+    "pages": [
+      {
+        "route": "/apps/deck-forge",
+        "label": "Deck Forge",
+        "icon": "Presentation"
+      }
+    ]
+  },
+  "permissions": {
+    "api": [
+      "/apps/deck-forge/api/*",
+      "/api/apps/deck-forge",
+      "/api/apps/deck-forge/*"
+    ],
+    "storage": true
+  }
+}

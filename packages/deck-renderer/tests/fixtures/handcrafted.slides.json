@@ -1,0 +1,4 @@
+{"title": "Renderer Fixture", "subtitle": "Handcrafted spec for equivalence tests",
+ "slides": [{"title": "First", "bullets": ["Alpha point", "Beta point", "Gamma point"], "notes": "Speaker notes one."},
+            {"title": "Second", "bullets": ["Delta"], "notes": ""},
+            {"title": "", "bullets": [], "notes": "Untitled slide falls back to its number."}]}

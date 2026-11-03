@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+"""Fake kiro-cli for tests: prints slide JSON (or garbage when the prompt contains FAIL)."""
+import json, os, sys
+msg = sys.argv[-1]
+assert sys.argv[1:6] == ["chat", "--no-interactive", "--agent", "deck-forge-writer", "--trust-tools="], sys.argv
+assert not any(k.startswith("LANGFUSE_") for k in os.environ), "Langfuse keys leaked to the agent"
+assert os.path.isfile(".kiro/agents/deck-forge-writer.json")
+if "FAIL" in msg:
+    print("\x1b[1msorry, no json\x1b[0m"); sys.exit(1)
+print("\x1b[32m" + json.dumps({"title": "Fake Deck", "subtitle": "sub", "slides": [
+    {"title": "One", "bullets": ["a", "b"], "notes": "n"}, {"title": "Two", "bullets": ["c"], "notes": ""}]}) + "\x1b[0m")
+print("[INFO] done", file=sys.stderr)

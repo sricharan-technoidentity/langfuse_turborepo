@@ -1,0 +1,20 @@
+{
+  "name": "@repo/deck-forge-ui",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Deck Forge dashboard page (Vite + React, @kirocrew/app-sdk). Builds dist/index.mjs; @repo/deck-forge bundles it as ui/dist/index.mjs.",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@repo/tsconfig": "workspace:*",
+    "@types/react": "^18.3.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "react": "^18.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.0.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@repo/deck-forge",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Deck Forge, the installable Kiro Crew app. `build` assembles the self-contained app folder dist/deck-forge (UI build + backend + vendored workspace Python packages) that the gateway installs.",
+  "scripts": {
+    "build": "python3 scripts/assemble.py",
+    "test": "backend/.venv/bin/python scripts/check_bundle.py",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@repo/deck-forge-ui": "workspace:*",
+    "@repo/deck-forge-backend": "workspace:*",
+    "@repo/langfuse-python": "workspace:*",
+    "@repo/observability-python": "workspace:*",
+    "@repo/deck-renderer": "workspace:*"
+  }
+}
