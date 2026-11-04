@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "deck-forge": {
+      "type": "stdio",
+      "command": "/workspace/deck-forge-power/server/.venv/bin/python",
+      "args": ["-m", "deck_forge_mcp"],
+      "env": {
+        "DECK_FORGE_OUT_DIR": "${DECK_FORGE_OUT_DIR}",
+        "LANGFUSE_PUBLIC_KEY": "${LANGFUSE_PUBLIC_KEY}",
+        "LANGFUSE_SECRET_KEY": "${LANGFUSE_SECRET_KEY}",
+        "LANGFUSE_BASE_URL": "${LANGFUSE_BASE_URL}",
+        "LANGFUSE_TRACING_ENVIRONMENT": "${LANGFUSE_TRACING_ENVIRONMENT}"
+      }
+    }
+  }
+}

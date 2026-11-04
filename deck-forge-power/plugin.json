@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "deck-forge",
+  "version": "0.1.0",
+  "description": "Turn a prompt into a .pptx: the agent writes slide JSON (title, bullets, notes) and the deck-forge MCP server renders it with python-pptx. Optional Langfuse tracing and feedback scores.",
+  "author": { "name": "Bhaskar" },
+  "keywords": ["deck", "slides", "pptx", "powerpoint", "presentation", "deck forge", "deck-forge"],
+  "license": "MIT-0"
+}

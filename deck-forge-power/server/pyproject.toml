@@ -1,0 +1,15 @@
+[project]
+name = "deck-forge-mcp"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["mcp>=2.3,<3", "python-pptx==1.0.2", "langfuse>=5.0.4,<5.1"]
+
+[project.scripts]
+deck-forge-mcp = "deck_forge_mcp.__main__:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["deck_forge_mcp", "repo_deck_renderer", "repo_langfuse", "repo_observability"]
