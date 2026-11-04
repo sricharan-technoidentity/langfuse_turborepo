@@ -1,0 +1,14 @@
+# local environment
+server/.venv/
+__pycache__/
+*.egg-info/
+*.pyc
+# generated output
+decks/
+out/
+*.pptx
+!examples/*.pptx
+# secrets
+.env
+.env.*
+!.env.example

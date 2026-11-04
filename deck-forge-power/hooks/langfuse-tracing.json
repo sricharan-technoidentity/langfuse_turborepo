@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    { "name": "langfuse-prompt", "trigger": "UserPromptSubmit",
+      "action": { "type": "command", "command": "python3 ~/.kiro/hooks/langfuse_kiro_hook.py" }, "timeout": 10 },
+    { "name": "langfuse-pre-tool", "trigger": "PreToolUse",
+      "action": { "type": "command", "command": "python3 ~/.kiro/hooks/langfuse_kiro_hook.py" }, "timeout": 10 },
+    { "name": "langfuse-post-tool", "trigger": "PostToolUse",
+      "action": { "type": "command", "command": "python3 ~/.kiro/hooks/langfuse_kiro_hook.py" }, "timeout": 10 },
+    { "name": "langfuse-stop", "trigger": "Stop",
+      "action": { "type": "command", "command": "python3 ~/.kiro/hooks/langfuse_kiro_hook.py" }, "timeout": 10 }
+  ]
+}

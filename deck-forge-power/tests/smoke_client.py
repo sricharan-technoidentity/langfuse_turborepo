@@ -13,6 +13,7 @@ def payload(res):
 async def main():
     out = Path(tempfile.mkdtemp()) / "sample.pptx"
     env = {k: v for k, v in os.environ.items() if not k.startswith("LANGFUSE_")}
+    env["DECK_FORGE_OUT_DIR"] = tempfile.mkdtemp()
     params = StdioServerParameters(command=str(ROOT / "server/.venv/bin/python"), args=["-m", "deck_forge_mcp"], env=env)
     spec = json.loads((ROOT / "examples/sample.slides.json").read_text())
     async with stdio_client(params) as (r, w):
@@ -24,6 +25,9 @@ async def main():
             print("validate bad:", payload(await s.call_tool("validate_deck_spec", {"spec": {"slides": []}})))
             res = payload(await s.call_tool("render_deck", {"spec": spec, "out_path": str(out), "prompt": "smoke"}))
             print("render:", res)
+            rel = payload(await s.call_tool("render_deck", {"spec": spec, "out_path": "relative-check.pptx"}))
+            assert Path(rel["path"]).parent == Path(env["DECK_FORGE_OUT_DIR"]).resolve(), rel
+            print("relative out_path resolves into DECK_FORGE_OUT_DIR: OK")
             print("langfuse_status:", payload(await s.call_tool("langfuse_status", {})))
             print("feedback w/o keys:", payload(await s.call_tool("record_feedback", {"trace_id": "x", "positive": True})))
     from pptx import Presentation

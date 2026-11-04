@@ -1,63 +1,61 @@
-# Deck Forge — Kiro Power (prototype)
+# Deck Forge — Kiro IDE Power
 
-Deck Forge (Kiro Crew app) repackaged as a Kiro IDE **Power**: the IDE agent writes the slide JSON,
-and a local stdio MCP server (`deck-forge`) validates it, renders a `.pptx` with python-pptx,
-and optionally traces and scores it in Langfuse.
+Deck Forge is a Kiro Crew app that turns a prompt into a `.pptx` and traces it in Langfuse. This folder repackages it as a **Kiro IDE Power**: the IDE agent writes the slide JSON, and a local MCP server renders the deck and, optionally, traces and scores it in Langfuse.
 
-## Contents
-| Path | Purpose |
+Status: working prototype. The server and smoke test pass, and one deck was generated end to end from the Kiro IDE. Langfuse export has only been tested against a fake server, not a real Langfuse project.
+
+## What you get
+
+| Piece | What it does |
 |---|---|
-| `plugin.json` | Power manifest (Agent Plugins 1.0.0 schema) |
-| `mcp.json` | Registers the `deck-forge` stdio MCP server |
-| `skills/deck-forge-outline/SKILL.md` | Slide-JSON rules (ported from the Crew `deck-forge-outline` skill) |
-| `skills/deck-forge-generate/SKILL.md` | Workflow: write JSON → `validate_deck_spec` → `render_deck` → `record_feedback` |
-| `server/` | Python MCP server (`deck_forge_mcp`) + vendored `repo_deck_renderer`, `repo_langfuse`, `repo_observability` |
-| `examples/sample.slides.json` | Sample deck (from the deck-renderer fixture) |
-| `tests/smoke_client.py` | stdio client smoke test |
+| Skill `deck-forge-outline` | Rules for writing valid slide JSON (ported from the Crew app) |
+| Skill `deck-forge-generate` | Workflow: write JSON, validate, render, ask for feedback |
+| MCP tool `validate_deck_spec` | Checks the slide JSON and returns the problems |
+| MCP tool `render_deck` | Renders a `.pptx` with python-pptx and opens a Langfuse trace when enabled |
+| MCP tool `record_feedback` | Stores thumbs up or down as a Langfuse score on a trace |
+| MCP tool `langfuse_status` | Reports whether tracing is on (never returns keys) |
+| `hooks/` (optional) | Per-turn Langfuse tracing of the whole Kiro IDE session |
 
-MCP tools: `validate_deck_spec(spec)`, `render_deck(spec, out_path?, prompt?)`,
-`record_feedback(trace_id, positive, comment?)`, `langfuse_status()`.
+## Repository layout
 
-## Setup (once)
-```bash
-cd /workspace/deck-forge-power/server
-uv venv .venv --python 3.13          # or: python3 -m venv .venv
-uv pip install --python .venv/bin/python -e .
-../server/.venv/bin/python ../tests/smoke_client.py   # expect "SMOKE OK" and "FAIL-OPEN OK"
 ```
-If you move the folder, update `command` in `mcp.json` (it's an absolute path to the venv's python).
+deck-forge-power/
+├── plugin.json              Power manifest
+├── mcp.json                 Registers the stdio MCP server (absolute venv path, rewritten by setup.sh)
+├── skills/                  Power skills the IDE agent loads
+│   ├── deck-forge-outline/SKILL.md
+│   └── deck-forge-generate/SKILL.md
+├── server/                  Python MCP server (see server/README.md)
+│   ├── deck_forge_mcp/      Tool definitions
+│   ├── repo_deck_renderer/  Vendored from langfuse_turborepo/packages/deck-renderer
+│   ├── repo_langfuse/       Vendored Langfuse client wrapper
+│   └── repo_observability/  Vendored tracing, scores and prompt helpers
+├── hooks/                   Optional Kiro hooks for per-turn Langfuse tracing (see hooks/README.md)
+├── examples/                Sample slide JSON
+├── tests/                   Stdio smoke test
+├── scripts/setup.sh         Creates the venv, fixes mcp.json, runs the smoke test
+├── docs/                    Installation, manual testing, Langfuse, Crew-to-Power mapping
+├── .env.example             Optional environment variables
+└── .gitignore
+```
 
-## Install in Kiro
-- **IDE:** Powers panel → **Add Custom Power** → *Import power from a folder* → pick this folder.
-  Or *Import power from GitHub* after you push it to a repo (not done here).
-- **CLI:** `kiro-cli` chat → `/powers install /workspace/deck-forge-power` (IDE 1.4.26+ also shows CLI-installed powers).
-- Activates on keywords such as "deck", "slides", "pptx", "presentation". Try: *"Make a 5-slide deck on our Q3 roadmap"*.
-- Kiro prefixes the server name on install (for example `power-deck-forge-deck-forge`).
+## Quick start
+
+```bash
+./scripts/setup.sh          # venv + install + rewrite mcp.json + smoke test (expect "SMOKE OK" and "FAIL-OPEN OK")
+```
+
+Then in Kiro IDE: Powers panel, Add Custom Power, import from a folder, and pick this folder. Ask: *"Make a 5-slide deck on Turborepo caching."* The deck is written to `$DECK_FORGE_OUT_DIR`, or `./decks/` when that is unset.
+
+More detail: [docs/installation.md](docs/installation.md), [docs/manual-testing.md](docs/manual-testing.md), [docs/langfuse.md](docs/langfuse.md), [docs/crew-to-power.md](docs/crew-to-power.md).
 
 ## Environment variables (all optional)
-| Var | Effect |
-|---|---|
-| `DECK_FORGE_OUT_DIR` | Where decks go (default `./decks/` in the workspace) |
-| `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | Tracing and feedback turn on **only if both are set** |
-| `LANGFUSE_BASE_URL` | e.g. `https://cloud.langfuse.com` (EU) or `https://us.cloud.langfuse.com` |
-| `LANGFUSE_TRACING_ENVIRONMENT` | Langfuse environment tag |
 
-Set these in the shell or OS environment that launches Kiro. Unset or `${...}` placeholders count as "off".
-Langfuse is fail-open, so an unreachable host or bad key never blocks rendering. Never commit keys.
+See [.env.example](.env.example). Tracing turns on only when both `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are set. Langfuse failures never block rendering. Never commit keys.
 
-## Sharing without an absolute path
-Push the folder to a git repo and point `mcp.json` at:
-`"command": "uvx", "args": ["--from", "git+https://github.com/<you>/deck-forge-power#subdirectory=server", "deck-forge-mcp"]`
-(inferred, not tested here).
+## Known limitations
 
-## Crew app → Power mapping and limitations
-| Crew piece | In the IDE |
-|---|---|
-| `deck-forge-outline` skill | Power skill (ported) |
-| `deck-forge-writer` agent + backend calling `kiro-cli` | IDE agent writes JSON itself, guided by the skills; optional IDE custom agent / steering file for persona |
-| deck-renderer package | MCP tool `render_deck` |
-| Langfuse trace per job | `render_deck` span (server); per-turn tracing via the Kiro hook at `/workspace/kiro-langfuse/langfuse_kiro_hook.py` (`TRACE_TO_LANGFUSE=true`) |
-| Thumbs-up/down feedback | MCP tool `record_feedback` (agent asks you) |
-| UI page, job queue/status, download button | **Not available**: Powers have no UI. The file is written to disk; open it from the explorer |
-| Cron / gateway / proxy backend | **Not available**: Powers have no scheduler or server-side backend |
-| Hooks / agents bundled in the app | Not in Powers; set them up separately as IDE hooks / custom agents |
+- Powers have no UI, job queue, scheduler or backend, so the Crew app's web page, status view and download button do not carry over. The file is written to disk.
+- `mcp.json` needs an absolute interpreter path, so re-run `scripts/setup.sh` after moving the folder.
+- The server needs Python 3.11 or newer.
+- Per-turn tracing via hooks records prompts and tool calls only. Kiro hooks do not expose model replies, token counts or cost.

@@ -83,15 +83,18 @@ def validate_deck_spec(spec: dict) -> dict:
 @mcp.tool()
 def render_deck(spec: dict, out_path: str = "", prompt: str = "") -> dict:
     """Render Deck Forge slide JSON to a .pptx with python-pptx. out_path defaults to
-    $DECK_FORGE_OUT_DIR (or ./decks)/<title>.pptx. Traced to Langfuse when keys are set."""
+    $DECK_FORGE_OUT_DIR (or ./decks)/<title>.pptx; a relative out_path is resolved against that directory. Traced to Langfuse when keys are set."""
     probs = _problems(spec)
     if probs:
         return {"ok": False, "problems": probs}
+    out_dir = Path(os.environ.get("DECK_FORGE_OUT_DIR") or "decks").expanduser()
     if out_path:
         out = Path(out_path).expanduser()
+        if not out.is_absolute():
+            out = out_dir / out  # relative paths land in DECK_FORGE_OUT_DIR, not the IDE's cwd
     else:
         safe = "".join(c if c.isalnum() or c in "-_" else "-" for c in spec["title"].lower())[:60].strip("-") or "deck"
-        out = Path(os.environ.get("DECK_FORGE_OUT_DIR") or "decks") / f"{safe}.pptx"
+        out = out_dir / f"{safe}.pptx"
     if out.suffix.lower() != ".pptx":
         out = out.with_suffix(".pptx")
     out = out.resolve()
